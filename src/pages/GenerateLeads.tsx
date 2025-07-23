@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Zap, Loader2, Search } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useToast } from '@/hooks/use-toast';
@@ -132,17 +132,16 @@ export default function GenerateLeads() {
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="flex items-center space-x-2">
                   <Label htmlFor="leadCount">Number of Leads:</Label>
-                  <Select value={leadCount} onValueChange={setLeadCount}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 leads</SelectItem>
-                      <SelectItem value="10">10 leads</SelectItem>
-                      <SelectItem value="25">25 leads</SelectItem>
-                      <SelectItem value="50">50 leads</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="leadCount"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={leadCount}
+                    onChange={(e) => setLeadCount(e.target.value)}
+                    className="w-32"
+                    placeholder="10"
+                  />
                 </div>
 
                 <Button type="submit" disabled={isGenerating} className="min-w-[150px]">
