@@ -281,7 +281,7 @@ export default function History() {
         {/* Filters */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg">Filters</CardTitle>
+            <CardTitle className="text-lg">Filters & Email Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
@@ -307,6 +307,22 @@ export default function History() {
                     <SelectItem value="sent">Email Sent</SelectItem>
                     <SelectItem value="generated">Email Generated</SelectItem>
                     <SelectItem value="no-email">No Email</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <Select value={selectedTone} onValueChange={setSelectedTone}>
+                  <SelectTrigger>
+                    <Mail className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="casual">Casual</SelectItem>
+                    <SelectItem value="friendly">Friendly</SelectItem>
+                    <SelectItem value="funny">Funny</SelectItem>
+                    <SelectItem value="formal">Formal</SelectItem>
+                    <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

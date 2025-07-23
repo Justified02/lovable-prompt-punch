@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, RefreshCw, Send, Edit3, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,11 +43,21 @@ export default function EmailPreviewModal({
 }: EmailPreviewModalProps) {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [currentTone, setCurrentTone] = useState(tone);
   const [isEditing, setIsEditing] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const toneOptions = [
+    { value: 'professional', label: 'Professional' },
+    { value: 'casual', label: 'Casual' },
+    { value: 'friendly', label: 'Friendly' },
+    { value: 'funny', label: 'Funny' },
+    { value: 'formal', label: 'Formal' },
+    { value: 'enthusiastic', label: 'Enthusiastic' },
+  ];
 
   // FIX: Improved email parsing logic to handle N8N webhook response format
   useEffect(() => {
@@ -134,7 +145,7 @@ export default function EmailPreviewModal({
             location: lead.location,
             snippet: lead.snippet,
           },
-          tone: tone,
+          tone: currentTone,
           user_id: user?.id
         }),
       });
@@ -239,6 +250,24 @@ export default function EmailPreviewModal({
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tone">Email Tone</Label>
+              <Select value={currentTone} onValueChange={setCurrentTone}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tone" />
+                </SelectTrigger>
+                <SelectContent>
+                  {toneOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="subject">Subject</Label>
             <Input
