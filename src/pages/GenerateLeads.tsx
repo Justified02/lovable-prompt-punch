@@ -20,6 +20,8 @@ interface GeneratedLead {
   email: string;
   linkedin: string;
   snippet: string;
+  image?: string | null;
+  company_domain?: string;
   generated_email?: string | null;
   email_sent?: boolean;
 }
@@ -77,14 +79,39 @@ export default function GenerateLeads() {
 
       const result = await response.json();
       
-      // Set the generated leads to display immediately
-      if (result.leads && Array.isArray(result.leads)) {
-        setGeneratedLeads(result.leads);
+      // The webhook returns an array of leads directly, not wrapped in an object
+      if (Array.isArray(result) && result.length > 0) {
+        setGeneratedLeads(result);
+        
+        // Save leads to database for history
+        try {
+          for (const lead of result) {
+            await supabase
+              .from('lead_history')
+              .insert({
+                id: lead.id,
+                user_id: user?.id,
+                name: lead.name,
+                title: lead.title,
+                company: lead.company,
+                location: lead.location,
+                email: lead.email,
+                linkedin: lead.linkedin,
+                snippet: lead.snippet,
+                image: lead.image,
+                company_domain: lead.company_domain,
+                generated_email: null,
+                email_sent: false
+              });
+          }
+        } catch (dbError) {
+          console.warn('Error saving leads to database:', dbError);
+        }
       }
       
       toast({
         title: "Leads generated successfully!",
-        description: `Found ${result.leads_count || result.leads?.length || 'some'} potential leads.`,
+        description: `Found ${result.length || 'some'} potential leads.`,
       });
 
       // Reset form
