@@ -68,7 +68,7 @@ export default function GenerateLeads() {
         },
         body: JSON.stringify({
           description,
-          leadCount,
+          leadCount: parseInt(leadCount),
           user_id: user?.id,
         }),
       });
