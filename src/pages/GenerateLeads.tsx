@@ -180,7 +180,7 @@ export default function GenerateLeads() {
 
       toast({
         title: "Email generated successfully",
-        description: "Click 'View Email' to see the generated content.",
+        description: "Email preview opened automatically.",
       });
 
     } catch (error: any) {

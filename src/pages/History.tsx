@@ -163,14 +163,17 @@ export default function History() {
         l.id === lead.id ? { ...l, generated_email: emailContent } : l
       ));
 
-      // Show email preview
-      setSelectedLead({ ...lead, generated_email: emailContent });
-      setShowEmailPreview(true);
-
       toast({
         title: "Email generated successfully",
-        description: "The email has been generated and is ready for review.",
+        description: "Email preview opened automatically.",
       });
+
+      // Automatically show email preview
+      setTimeout(() => {
+        const updatedLead = { ...lead, generated_email: emailContent };
+        setSelectedLead(updatedLead);
+        setShowEmailPreview(true);
+      }, 1000);
 
     } catch (error: any) {
       console.error('Error generating email:', error);

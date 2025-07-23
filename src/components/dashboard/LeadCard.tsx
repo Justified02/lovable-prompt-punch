@@ -40,6 +40,8 @@ export default function LeadCard({ lead, onGenerateEmail, isGenerating = false, 
   const handleToneSelected = (tone: string) => {
     setShowToneDialog(false);
     onGenerateEmail(lead, tone);
+    // Automatically show email preview after generation
+    setTimeout(() => setShowEmailPreview(true), 1000);
   };
 
   const handleViewEmail = () => {
@@ -104,11 +106,7 @@ export default function LeadCard({ lead, onGenerateEmail, isGenerating = false, 
                 <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                   Email Generated
                 </Badge>
-              ) : (
-                <Badge variant="secondary">
-                  No Email
-                </Badge>
-              )}
+              ) : null}
             </div>
             
             <div className="flex space-x-2">
