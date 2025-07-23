@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useToast } from '@/hooks/use-toast';
 import EmailPreviewModal from '@/components/dashboard/EmailPreviewModal';
+import ToneSelectionDialog from '@/components/dashboard/ToneSelectionDialog';
 
 interface LeadHistory {
   id: string;
@@ -42,7 +43,8 @@ export default function History() {
   const [sendingEmailFor, setSendingEmailFor] = useState<string | null>(null);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadHistory | null>(null);
-  const [selectedTone, setSelectedTone] = useState('professional');
+  const [showToneDialog, setShowToneDialog] = useState(false);
+  const [leadForEmailGeneration, setLeadForEmailGeneration] = useState<LeadHistory | null>(null);
   const leadsPerPage = 10;
 
   useEffect(() => {
@@ -100,6 +102,19 @@ export default function History() {
     }
 
     setFilteredLeads(filtered);
+  };
+
+  const handleGenerateEmailClick = (lead: LeadHistory) => {
+    setLeadForEmailGeneration(lead);
+    setShowToneDialog(true);
+  };
+
+  const handleToneSelected = (tone: string) => {
+    if (leadForEmailGeneration) {
+      generateEmailForLead(leadForEmailGeneration, tone);
+    }
+    setShowToneDialog(false);
+    setLeadForEmailGeneration(null);
   };
 
   const generateEmailForLead = async (lead: LeadHistory, tone: string = 'professional') => {
@@ -310,22 +325,6 @@ export default function History() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-48">
-                <Select value={selectedTone} onValueChange={setSelectedTone}>
-                  <SelectTrigger>
-                    <Mail className="w-4 h-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="casual">Casual</SelectItem>
-                    <SelectItem value="friendly">Friendly</SelectItem>
-                    <SelectItem value="funny">Funny</SelectItem>
-                    <SelectItem value="formal">Formal</SelectItem>
-                    <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -404,7 +403,7 @@ export default function History() {
                               {!lead.generated_email ? (
                                 <Button
                                   size="sm"
-                                  onClick={() => generateEmailForLead(lead, selectedTone)}
+                                  onClick={() => handleGenerateEmailClick(lead)}
                                   disabled={generatingEmailFor === lead.id}
                                 >
                                   {generatingEmailFor === lead.id ? (
@@ -483,27 +482,27 @@ export default function History() {
           </CardContent>
         </Card>
 
-        {/* Email Preview Modal - FIX: Added proper email preview functionality */}
-        <EmailPreviewModal
-          isOpen={showEmailPreview}
-          onOpenChange={setShowEmailPreview}
-          lead={selectedLead ? {
-            id: selectedLead.id,
-            name: selectedLead.name,
-            title: selectedLead.title,
-            company: selectedLead.company,
-            location: selectedLead.location,
-            email: selectedLead.email,
-            linkedin: selectedLead.linkedin,
-            snippet: selectedLead.snippet,
-            image: selectedLead.image,
-            company_domain: selectedLead.company_domain
-          } : null}
-          emailContent={selectedLead?.generated_email || ''}
-          tone={selectedTone}
-          onEmailUpdate={handleEmailUpdate}
-          onEmailSent={handleEmailSent}
+        {/* Tone Selection Dialog */}
+        <ToneSelectionDialog
+          isOpen={showToneDialog}
+          onOpenChange={setShowToneDialog}
+          onToneSelected={handleToneSelected}
+          leadName={leadForEmailGeneration?.name || ''}
+          isGenerating={generatingEmailFor === leadForEmailGeneration?.id}
         />
+
+        {/* Email Preview Modal */}
+        {selectedLead && (
+          <EmailPreviewModal
+            isOpen={showEmailPreview}
+            onOpenChange={setShowEmailPreview}
+            lead={selectedLead}
+            emailContent={selectedLead.generated_email || ''}
+            tone="professional"
+            onEmailUpdate={handleEmailUpdate}
+            onEmailSent={handleEmailSent}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
