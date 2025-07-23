@@ -120,7 +120,10 @@ export default function EmailPreviewModal({
   }, [emailContent, lead]);
 
   const handleSave = () => {
-    const updatedContent = JSON.stringify({ subject, body });
+    const updatedContent = JSON.stringify({ 
+      'Subject Line': subject, 
+      'Email Body': body 
+    });
     onEmailUpdate(lead?.id!, updatedContent);
     setIsEditing(false);
     toast({
@@ -153,7 +156,7 @@ export default function EmailPreviewModal({
       if (!response.ok) throw new Error('Failed to regenerate email');
 
       const result = await response.json();
-      const newEmailContent = result.email_content || result.message || JSON.stringify(result);
+      const newEmailContent = JSON.stringify(result);
       
       // Update the parent component's data
       onEmailUpdate(lead.id, newEmailContent);

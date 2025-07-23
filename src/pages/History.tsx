@@ -97,18 +97,21 @@ export default function History() {
   useEffect(() => {
     if (user) {
       fetchLeadHistory();
-      
-      // Listen for custom event when leads are generated
-      const handleLeadsGenerated = () => {
-        fetchLeadHistory();
-      };
-      
-      window.addEventListener('leadsGenerated', handleLeadsGenerated);
-      
-      return () => {
-        window.removeEventListener('leadsGenerated', handleLeadsGenerated);
-      };
     }
+  }, [user]);
+
+  useEffect(() => {
+    // Listen for custom event when leads are generated
+    const handleLeadsGenerated = () => {
+      console.log('Leads generated event received, refreshing history...');
+      fetchLeadHistory();
+    };
+    
+    window.addEventListener('leadsGenerated', handleLeadsGenerated);
+    
+    return () => {
+      window.removeEventListener('leadsGenerated', handleLeadsGenerated);
+    };
   }, [user]);
 
   useEffect(() => {
