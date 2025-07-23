@@ -173,14 +173,14 @@ export default function GenerateLeads() {
         console.warn('Lead may not be in database yet:', dbError);
       }
 
-      // Update local state
+      // Update local state and show modal immediately
       setGeneratedLeads(prev => prev.map(l => 
         l.id === lead.id ? { ...l, generated_email: emailContent } : l
       ));
 
       toast({
         title: "Email generated successfully",
-        description: "The email has been generated and is ready for review.",
+        description: "Click 'View Email' to see the generated content.",
       });
 
     } catch (error: any) {
@@ -193,6 +193,18 @@ export default function GenerateLeads() {
     } finally {
       setGeneratingEmailFor(null);
     }
+  };
+
+  const handleEmailUpdate = (leadId: string, emailContent: string) => {
+    setGeneratedLeads(prev => prev.map(l => 
+      l.id === leadId ? { ...l, generated_email: emailContent } : l
+    ));
+  };
+
+  const handleEmailSent = (leadId: string) => {
+    setGeneratedLeads(prev => prev.map(l => 
+      l.id === leadId ? { ...l, email_sent: true } : l
+    ));
   };
 
   return (
@@ -296,6 +308,8 @@ export default function GenerateLeads() {
                     lead={lead}
                     onGenerateEmail={generateEmailForLead}
                     isGenerating={generatingEmailFor === lead.id}
+                    onEmailUpdate={handleEmailUpdate}
+                    onEmailSent={handleEmailSent}
                   />
                 ))}
               </div>

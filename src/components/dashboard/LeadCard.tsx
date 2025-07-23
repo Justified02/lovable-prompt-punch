@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Mail, Building, MapPin, User, Loader2 } from 'lucide-react';
+import { ExternalLink, Mail, Building, MapPin, User, Loader2, AtSign } from 'lucide-react';
 import ToneSelectionDialog from './ToneSelectionDialog';
+import EmailPreviewModal from './EmailPreviewModal';
 
 interface Lead {
   id: string;
@@ -14,6 +15,8 @@ interface Lead {
   email: string;
   linkedin: string;
   snippet: string;
+  image?: string | null;
+  company_domain?: string;
   generated_email?: string | null;
   email_sent?: boolean;
 }
@@ -22,10 +25,13 @@ interface LeadCardProps {
   lead: Lead;
   onGenerateEmail: (lead: Lead, tone: string) => void;
   isGenerating?: boolean;
+  onEmailUpdate?: (leadId: string, emailContent: string) => void;
+  onEmailSent?: (leadId: string) => void;
 }
 
-export default function LeadCard({ lead, onGenerateEmail, isGenerating = false }: LeadCardProps) {
+export default function LeadCard({ lead, onGenerateEmail, isGenerating = false, onEmailUpdate, onEmailSent }: LeadCardProps) {
   const [showToneDialog, setShowToneDialog] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
 
   const handleGenerateEmailClick = () => {
     setShowToneDialog(true);
@@ -34,6 +40,10 @@ export default function LeadCard({ lead, onGenerateEmail, isGenerating = false }
   const handleToneSelected = (tone: string) => {
     setShowToneDialog(false);
     onGenerateEmail(lead, tone);
+  };
+
+  const handleViewEmail = () => {
+    setShowEmailPreview(true);
   };
 
   return (
@@ -70,6 +80,12 @@ export default function LeadCard({ lead, onGenerateEmail, isGenerating = false }
                 <span className="text-sm text-muted-foreground">{lead.location}</span>
               </div>
             )}
+            {lead.email && (
+              <div className="flex items-center space-x-2">
+                <AtSign className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{lead.email}</span>
+              </div>
+            )}
           </div>
           
           {lead.snippet && (
@@ -95,25 +111,32 @@ export default function LeadCard({ lead, onGenerateEmail, isGenerating = false }
               )}
             </div>
             
-            {!lead.generated_email && (
-              <Button
-                size="sm"
-                onClick={handleGenerateEmailClick}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 mr-2" />
-                    Generate Email
-                  </>
-                )}
-              </Button>
-            )}
+            <div className="flex space-x-2">
+              {!lead.generated_email ? (
+                <Button
+                  size="sm"
+                  onClick={handleGenerateEmailClick}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Generate Email
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button size="sm" onClick={handleViewEmail} variant="outline">
+                  <Mail className="w-4 h-4 mr-2" />
+                  View Email
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -125,6 +148,23 @@ export default function LeadCard({ lead, onGenerateEmail, isGenerating = false }
         leadName={lead.name}
         isGenerating={isGenerating}
       />
+
+      {lead.generated_email && (
+        <EmailPreviewModal
+          isOpen={showEmailPreview}
+          onOpenChange={setShowEmailPreview}
+          lead={lead as any}
+          emailContent={lead.generated_email}
+          tone="professional"
+          onEmailUpdate={(emailContent) => {
+            onEmailUpdate?.(lead.id, emailContent);
+          }}
+          onEmailSent={() => {
+            onEmailSent?.(lead.id);
+            setShowEmailPreview(false);
+          }}
+        />
+      )}
     </>
   );
 }
