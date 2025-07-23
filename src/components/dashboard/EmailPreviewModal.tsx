@@ -155,7 +155,34 @@ export default function EmailPreviewModal({
       const result = await response.json();
       const newEmailContent = result.email_content || result.message || JSON.stringify(result);
       
+      // Update the parent component's data
       onEmailUpdate(lead.id, newEmailContent);
+      
+      // Parse and update the modal's displayed content immediately
+      try {
+        const parsed = JSON.parse(newEmailContent);
+        
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].output) {
+          const output = parsed[0].output;
+          if (output['Subject Line'] && output['Email Body']) {
+            setSubject(output['Subject Line']);
+            setBody(output['Email Body']);
+          }
+        } else if (parsed['Subject Line'] && parsed['Email Body']) {
+          setSubject(parsed['Subject Line']);
+          setBody(parsed['Email Body']);
+        } else if (parsed.subject && parsed.body) {
+          setSubject(parsed.subject);
+          setBody(parsed.body);
+        }
+      } catch (error) {
+        // Handle text format if JSON parsing fails
+        const subjectMatch = newEmailContent.match(/(?:subject|SUBJECT|Subject Line):\s*(.+?)(?:\n|$)/i);
+        const bodyMatch = newEmailContent.match(/(?:body|BODY|Email Body):\s*([\s\S]*?)(?:\n\n|$)/i);
+        
+        if (subjectMatch) setSubject(subjectMatch[1].trim());
+        if (bodyMatch) setBody(bodyMatch[1].trim());
+      }
       
       toast({
         title: "Email regenerated",

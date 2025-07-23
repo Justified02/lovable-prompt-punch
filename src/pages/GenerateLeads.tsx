@@ -83,6 +83,9 @@ export default function GenerateLeads() {
       if (Array.isArray(result) && result.length > 0) {
         setGeneratedLeads(result);
         
+        // Trigger dashboard stats refresh
+        window.dispatchEvent(new CustomEvent('leadsGenerated'));
+        
         // Save leads to database for history
         try {
           for (const lead of result) {

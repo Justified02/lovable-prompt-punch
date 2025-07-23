@@ -30,6 +30,53 @@ interface LeadHistory {
   company_domain: string;
 }
 
+// Helper functions to extract subject and body from email content
+const extractSubjectFromEmail = (emailContent: string | null): string => {
+  if (!emailContent) return '';
+  
+  try {
+    const parsed = JSON.parse(emailContent);
+    
+    // Handle N8N webhook response format
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].output) {
+      return parsed[0].output['Subject Line'] || '';
+    }
+    
+    // Handle direct object format
+    if (parsed['Subject Line']) return parsed['Subject Line'];
+    if (parsed.subject) return parsed.subject;
+  } catch (error) {
+    // Try text parsing
+    const subjectMatch = emailContent.match(/(?:subject|SUBJECT|Subject Line):\s*(.+?)(?:\n|$)/i);
+    return subjectMatch ? subjectMatch[1].trim() : '';
+  }
+  
+  return '';
+};
+
+const extractBodyFromEmail = (emailContent: string | null): string => {
+  if (!emailContent) return '';
+  
+  try {
+    const parsed = JSON.parse(emailContent);
+    
+    // Handle N8N webhook response format
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].output) {
+      return parsed[0].output['Email Body'] || '';
+    }
+    
+    // Handle direct object format
+    if (parsed['Email Body']) return parsed['Email Body'];
+    if (parsed.body) return parsed.body;
+  } catch (error) {
+    // Try text parsing
+    const bodyMatch = emailContent.match(/(?:body|BODY|Email Body):\s*([\s\S]*?)(?:\n\n|$)/i);
+    return bodyMatch ? bodyMatch[1].trim() : emailContent;
+  }
+  
+  return emailContent;
+};
+
 export default function History() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -209,7 +256,8 @@ export default function History() {
         body: JSON.stringify({
           to_email: lead.email,
           to_name: lead.name,
-          email_content: lead.generated_email,
+          subject: extractSubjectFromEmail(lead.generated_email),
+          body: extractBodyFromEmail(lead.generated_email),
           user_id: user?.id,
           lead_id: lead.id
         }),

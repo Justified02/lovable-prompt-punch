@@ -25,6 +25,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchDashboardStats();
+      
+      // Listen for custom event when leads are generated
+      const handleLeadsGenerated = () => {
+        fetchDashboardStats();
+      };
+      
+      window.addEventListener('leadsGenerated', handleLeadsGenerated);
+      
       // Set up real-time subscription for lead count updates
       const channel = supabase
         .channel('dashboard-stats')
@@ -43,6 +51,7 @@ export default function Dashboard() {
         .subscribe();
 
       return () => {
+        window.removeEventListener('leadsGenerated', handleLeadsGenerated);
         supabase.removeChannel(channel);
       };
     }
