@@ -62,14 +62,17 @@ export default function EmailPreviewModal({
   // FIX: Improved email parsing logic to handle N8N webhook response format
   useEffect(() => {
     if (emailContent) {
+      console.log('Parsing email content:', emailContent);
       try {
         // Try parsing as JSON first
         const parsed = JSON.parse(emailContent);
+        console.log('Parsed JSON:', parsed);
         
         // Handle N8N webhook response format: [{"output": {"Subject Line": "...", "Email Body": "..."}}]
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].output) {
           const output = parsed[0].output;
           if (output['Subject Line'] && output['Email Body']) {
+            console.log('Using N8N webhook array format');
             setSubject(output['Subject Line']);
             setBody(output['Email Body']);
             return;
@@ -78,6 +81,7 @@ export default function EmailPreviewModal({
         
         // Handle direct object format: {"Subject Line": "...", "Email Body": "..."}
         if (parsed['Subject Line'] && parsed['Email Body']) {
+          console.log('Using direct object format');
           setSubject(parsed['Subject Line']);
           setBody(parsed['Email Body']);
           return;
@@ -85,10 +89,24 @@ export default function EmailPreviewModal({
         
         // Handle existing format: {"subject": "...", "body": "..."}
         if (parsed.subject && parsed.body) {
+          console.log('Using legacy format');
           setSubject(parsed.subject);
           setBody(parsed.body);
           return;
         }
+
+        // Handle raw N8N response format without wrapper
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const firstItem = parsed[0];
+          if (firstItem['Subject Line'] && firstItem['Email Body']) {
+            console.log('Using direct array format');
+            setSubject(firstItem['Subject Line']);
+            setBody(firstItem['Email Body']);
+            return;
+          }
+        }
+
+        console.log('No recognized JSON format, falling back to text parsing');
       } catch (error) {
         // Not JSON, try to parse as text
         console.log('Email content is not JSON, trying text parsing:', error);
@@ -137,6 +155,7 @@ export default function EmailPreviewModal({
     
     setIsRegenerating(true);
     try {
+      console.log('Regenerating email for lead:', lead.name);
       const response = await fetch('https://divverse-community.app.n8n.cloud/webhook-test/email-generation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -156,6 +175,7 @@ export default function EmailPreviewModal({
       if (!response.ok) throw new Error('Failed to regenerate email');
 
       const result = await response.json();
+      console.log('Regeneration response:', result);
       
       // Handle different N8N response formats
       let newSubject = '';
@@ -166,17 +186,32 @@ export default function EmailPreviewModal({
         const output = result[0].output;
         newSubject = output['Subject Line'] || '';
         newBody = output['Email Body'] || '';
+        console.log('Using N8N webhook array format for regeneration');
       }
       // Handle direct object format: {"Subject Line": "...", "Email Body": "..."}
       else if (result['Subject Line'] && result['Email Body']) {
         newSubject = result['Subject Line'];
         newBody = result['Email Body'];
+        console.log('Using direct object format for regeneration');
       }
       // Handle legacy format: {"subject": "...", "body": "..."}
       else if (result.subject && result.body) {
         newSubject = result.subject;
         newBody = result.body;
+        console.log('Using legacy format for regeneration');
       }
+      // Handle raw N8N response format without wrapper
+      else if (Array.isArray(result) && result.length > 0) {
+        const firstItem = result[0];
+        if (firstItem['Subject Line'] && firstItem['Email Body']) {
+          newSubject = firstItem['Subject Line'];
+          newBody = firstItem['Email Body'];
+          console.log('Using direct array format for regeneration');
+        }
+      }
+      
+      console.log('Extracted subject:', newSubject);
+      console.log('Extracted body:', newBody);
       
       // Update state immediately
       setSubject(newSubject);
@@ -194,6 +229,7 @@ export default function EmailPreviewModal({
         description: "A new email has been generated",
       });
     } catch (error: any) {
+      console.error('Error regenerating email:', error);
       toast({
         title: "Error regenerating email",
         description: error.message,

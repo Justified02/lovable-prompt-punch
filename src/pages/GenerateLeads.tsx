@@ -83,9 +83,6 @@ export default function GenerateLeads() {
       if (Array.isArray(result) && result.length > 0) {
         setGeneratedLeads(result);
         
-        // Trigger dashboard stats refresh
-        window.dispatchEvent(new CustomEvent('leadsGenerated'));
-        
         // Save leads to database for history
         try {
           for (const lead of result) {
@@ -112,6 +109,14 @@ export default function GenerateLeads() {
         }
       }
       
+      // Dispatch custom event to notify other components with delay
+      console.log('Dispatching leadsGenerated event with count:', result.length);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('leadsGenerated', { 
+          detail: { count: result.length } 
+        }));
+      }, 500);
+
       toast({
         title: "Leads generated successfully!",
         description: `Found ${result.length || 'some'} potential leads.`,

@@ -102,12 +102,13 @@ export default function History() {
 
   useEffect(() => {
     // Listen for custom event when leads are generated
-    const handleLeadsGenerated = () => {
-      console.log('Leads generated event received, refreshing history...');
-      // Add a small delay to ensure database operations complete
+    const handleLeadsGenerated = (event: any) => {
+      console.log('History: Leads generated event received, refreshing history...', event.detail);
+      // Add a longer delay to ensure database operations complete
       setTimeout(() => {
+        console.log('History: Fetching updated lead history...');
         fetchLeadHistory();
-      }, 1000);
+      }, 2000);
     };
     
     window.addEventListener('leadsGenerated', handleLeadsGenerated);
