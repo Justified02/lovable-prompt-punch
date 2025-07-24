@@ -217,11 +217,8 @@ export default function EmailPreviewModal({
       setSubject(newSubject);
       setBody(newBody);
       
-      // Save to parent component in the expected format
-      const newEmailContent = JSON.stringify({ 
-        'Subject Line': newSubject, 
-        'Email Body': newBody 
-      });
+      // Store the complete API response exactly like History.tsx does
+      const newEmailContent = JSON.stringify(result);
       onEmailUpdate(lead.id, newEmailContent);
       
       toast({

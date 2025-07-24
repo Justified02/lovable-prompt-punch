@@ -109,13 +109,13 @@ export default function GenerateLeads() {
         }
       }
       
-      // Dispatch custom event to notify other components with delay
+      // Dispatch custom event to notify other components with longer delay
       console.log('Dispatching leadsGenerated event with count:', result.length);
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('leadsGenerated', { 
           detail: { count: result.length } 
         }));
-      }, 500);
+      }, 2000);
 
       toast({
         title: "Leads generated successfully!",
@@ -167,7 +167,7 @@ export default function GenerateLeads() {
 
       const result = await response.json();
       
-      // Store the complete response to handle N8N format properly
+      // Store the complete response exactly like History.tsx does
       const emailContent = JSON.stringify(result);
 
       // Update the lead in the database if it exists there
