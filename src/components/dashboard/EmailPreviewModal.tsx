@@ -156,36 +156,38 @@ export default function EmailPreviewModal({
       if (!response.ok) throw new Error('Failed to regenerate email');
 
       const result = await response.json();
-      const newEmailContent = JSON.stringify(result);
       
-      // Update the parent component's data
-      onEmailUpdate(lead.id, newEmailContent);
+      // Handle different N8N response formats
+      let newSubject = '';
+      let newBody = '';
       
-      // Parse and update the modal's displayed content immediately
-      try {
-        const parsed = JSON.parse(newEmailContent);
-        
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].output) {
-          const output = parsed[0].output;
-          if (output['Subject Line'] && output['Email Body']) {
-            setSubject(output['Subject Line']);
-            setBody(output['Email Body']);
-          }
-        } else if (parsed['Subject Line'] && parsed['Email Body']) {
-          setSubject(parsed['Subject Line']);
-          setBody(parsed['Email Body']);
-        } else if (parsed.subject && parsed.body) {
-          setSubject(parsed.subject);
-          setBody(parsed.body);
-        }
-      } catch (error) {
-        // Handle text format if JSON parsing fails
-        const subjectMatch = newEmailContent.match(/(?:subject|SUBJECT|Subject Line):\s*(.+?)(?:\n|$)/i);
-        const bodyMatch = newEmailContent.match(/(?:body|BODY|Email Body):\s*([\s\S]*?)(?:\n\n|$)/i);
-        
-        if (subjectMatch) setSubject(subjectMatch[1].trim());
-        if (bodyMatch) setBody(bodyMatch[1].trim());
+      // Handle N8N webhook response format: [{"output": {"Subject Line": "...", "Email Body": "..."}}]
+      if (Array.isArray(result) && result.length > 0 && result[0].output) {
+        const output = result[0].output;
+        newSubject = output['Subject Line'] || '';
+        newBody = output['Email Body'] || '';
       }
+      // Handle direct object format: {"Subject Line": "...", "Email Body": "..."}
+      else if (result['Subject Line'] && result['Email Body']) {
+        newSubject = result['Subject Line'];
+        newBody = result['Email Body'];
+      }
+      // Handle legacy format: {"subject": "...", "body": "..."}
+      else if (result.subject && result.body) {
+        newSubject = result.subject;
+        newBody = result.body;
+      }
+      
+      // Update state immediately
+      setSubject(newSubject);
+      setBody(newBody);
+      
+      // Save to parent component in the expected format
+      const newEmailContent = JSON.stringify({ 
+        'Subject Line': newSubject, 
+        'Email Body': newBody 
+      });
+      onEmailUpdate(lead.id, newEmailContent);
       
       toast({
         title: "Email regenerated",

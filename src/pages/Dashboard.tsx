@@ -28,7 +28,11 @@ export default function Dashboard() {
       
       // Listen for custom event when leads are generated
       const handleLeadsGenerated = () => {
-        fetchDashboardStats();
+        console.log('Dashboard received leadsGenerated event, refreshing stats...');
+        // Add a small delay to ensure database operations complete
+        setTimeout(() => {
+          fetchDashboardStats();
+        }, 1000);
       };
       
       window.addEventListener('leadsGenerated', handleLeadsGenerated);

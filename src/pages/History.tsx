@@ -104,7 +104,10 @@ export default function History() {
     // Listen for custom event when leads are generated
     const handleLeadsGenerated = () => {
       console.log('Leads generated event received, refreshing history...');
-      fetchLeadHistory();
+      // Add a small delay to ensure database operations complete
+      setTimeout(() => {
+        fetchLeadHistory();
+      }, 1000);
     };
     
     window.addEventListener('leadsGenerated', handleLeadsGenerated);
@@ -112,7 +115,7 @@ export default function History() {
     return () => {
       window.removeEventListener('leadsGenerated', handleLeadsGenerated);
     };
-  }, [user]);
+  }, []); // Remove dependency to avoid circular reference
 
   useEffect(() => {
     filterLeads();
